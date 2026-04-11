@@ -1,0 +1,23 @@
+{
+  "name": "MuGina Ticketing",
+  "short_name": "MuGina",
+  "description": "Event ticketing and QR validation for Ghana",
+  "theme_color": "#F6AB2A",
+  "background_color": "#1a1a2e",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
