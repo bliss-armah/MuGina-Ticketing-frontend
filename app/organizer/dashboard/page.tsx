@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import { eventsApi } from '../../../lib/api';
 import { useRequireRole } from '../../../hooks/useAuth';
 import { Navbar } from '../../../components/layout/Navbar';
@@ -72,9 +73,14 @@ export default function OrganizerDashboardPage() {
                 const total = event.ticketTypes?.reduce((s: number, tt: any) => s + tt.quantity, 0) || 0;
                 const revenue = event.ticketTypes?.reduce((s: number, tt: any) => s + tt.soldCount * Number(tt.price), 0) || 0;
 
+                const copyGateId = () => {
+                  navigator.clipboard.writeText(event.id);
+                  toast.success('Event ID copied — share with your gate agents');
+                };
+
                 return (
                   <Card key={event.id} padding="md">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge variant={event.isPublished ? 'success' : 'neutral'}>
@@ -90,6 +96,15 @@ export default function OrganizerDashboardPage() {
                           <span className="text-xs font-semibold text-green-600">GH₵ {revenue.toFixed(2)}</span>
                         </div>
                       </div>
+
+                      {event.isPublished && (
+                        <button
+                          onClick={copyGateId}
+                          className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-brand-gold border border-brand-gold/40 rounded-xl px-3 py-1.5 hover:bg-brand-gold/10 active:scale-95 transition-all"
+                        >
+                          🔑 Copy Gate ID
+                        </button>
+                      )}
                     </div>
                   </Card>
                 );

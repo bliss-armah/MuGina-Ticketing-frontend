@@ -20,15 +20,17 @@ export function useAuth(requireAuth: boolean = true) {
   return { user, token, isLoading, isAuthenticated: !!token };
 }
 
-export function useRequireRole(role: string) {
+export function useRequireRole(roles: string | string[]) {
   const { user, isLoading } = useAuth(true);
   const router = useRouter();
+  const allowed = Array.isArray(roles) ? roles : [roles];
 
   useEffect(() => {
-    if (!isLoading && user && user.role !== role) {
-      router.push('/');
+    if (!isLoading && user && !allowed.includes(user.role)) {
+      router.push('/events');
     }
-  }, [user, isLoading, role, router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isLoading, router]);
 
   return { user, isLoading };
 }
