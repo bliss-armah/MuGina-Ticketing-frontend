@@ -77,6 +77,8 @@ export const ticketsApi = {
 export const scannerApi = {
   validate: (data: { qrPayload: string; eventId: string }) =>
     api.post("/scanner/validate", data),
+  validatePin: (data: { pin: string; eventId: string }) =>
+    api.post("/scanner/validate-pin", data),
   getEventTickets: (eventId: string) =>
     api.get(`/scanner/event/${eventId}/tickets`),
 };

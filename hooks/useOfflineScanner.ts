@@ -91,6 +91,28 @@ export function useOfflineScanner(eventId: string) {
     return response.data.length;
   }, [eventId]);
 
+  const handlePinScan = useCallback(async (pin: string) => {
+    if (scanning) return;
+    setScanning(true);
+    try {
+      if (!navigator.onLine) {
+        setLastResult({ status: 'offline_invalid', message: 'PIN validation requires an internet connection' });
+        return;
+      }
+      const response = await scannerApi.validatePin({ pin, eventId });
+      setLastResult(response.data);
+      if (response.data.status === 'valid') {
+        vibrate([100, 50, 100]);
+      } else {
+        vibrate([300]);
+      }
+    } catch {
+      setLastResult({ status: 'invalid', message: 'Could not validate PIN' });
+    } finally {
+      setTimeout(() => setScanning(false), 1500);
+    }
+  }, [scanning, eventId]);
+
   const syncQueue = useCallback(async () => {
     if (!navigator.onLine) return;
     const queue = await getOfflineScanQueue();
@@ -104,5 +126,5 @@ export function useOfflineScanner(eventId: string) {
     await clearScanQueue();
   }, []);
 
-  return { handleScan, lastResult, scanning, isOnline, downloadForOffline, syncQueue };
+  return { handleScan, handlePinScan, lastResult, scanning, isOnline, downloadForOffline, syncQueue };
 }

@@ -38,7 +38,10 @@ export default function ScanPage() {
   const [syncing, setSyncing] = useState(false);
   const [scanEnabled, setScanEnabled] = useState(false);
 
-  const { handleScan, lastResult, scanning, isOnline, downloadForOffline, syncQueue } =
+  const [scanMode, setScanMode] = useState<'camera' | 'pin'>('camera');
+  const [pinInput, setPinInput] = useState('');
+
+  const { handleScan, handlePinScan, lastResult, scanning, isOnline, downloadForOffline, syncQueue } =
     useOfflineScanner(activeEventId);
 
   // Load organizer's own events (organizer path only)
@@ -78,6 +81,8 @@ export default function ScanPage() {
     setActiveEventId('');
     setEnteredId('');
     setIdError('');
+    setScanMode('camera');
+    setPinInput('');
   };
 
   const handleDownload = async () => {
@@ -219,19 +224,75 @@ export default function ScanPage() {
               </Button>
             </div>
 
-            <div className={`transition-all duration-300 ${scanning ? 'opacity-50' : 'opacity-100'}`}>
-              <QRScanner onScan={onScan} enabled={!scanning} />
+            {/* Mode toggle */}
+            <div className="flex rounded-xl overflow-hidden border border-white/20">
+              <button
+                onClick={() => setScanMode('camera')}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  scanMode === 'camera' ? 'bg-brand-gold text-brand-dark' : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                }`}
+              >
+                📷 Camera
+              </button>
+              <button
+                onClick={() => setScanMode('pin')}
+                className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+                  scanMode === 'pin' ? 'bg-brand-gold text-brand-dark' : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                }`}
+              >
+                🔢 Entry PIN
+              </button>
             </div>
 
-            {lastResult ? (
-              <div className="text-2xl">
-                <ScanResult status={lastResult.status} message={lastResult.message} />
-              </div>
+            {scanMode === 'camera' ? (
+              <>
+                <div className={`transition-all duration-300 ${scanning ? 'opacity-50' : 'opacity-100'}`}>
+                  <QRScanner onScan={onScan} enabled={!scanning} />
+                </div>
+
+                {lastResult ? (
+                  <ScanResult status={lastResult.status} message={lastResult.message} />
+                ) : (
+                  <div className="text-center text-gray-400 py-4">
+                    <p className="text-4xl mb-2">📷</p>
+                    <p className="text-sm">Point camera at QR code to scan</p>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="text-center text-gray-400 py-4">
-                <p className="text-4xl mb-2">📷</p>
-                <p className="text-sm">Point camera at QR code to scan</p>
-              </div>
+              <>
+                <div className="bg-white/10 rounded-2xl p-5 space-y-4">
+                  <div>
+                    <h2 className="font-bold text-base">Enter Ticket PIN</h2>
+                    <p className="text-sm text-gray-400 mt-0.5">Type the 6-digit PIN sent to the attendee.</p>
+                  </div>
+                  <Input
+                    label="Entry PIN"
+                    placeholder="e.g. 123456"
+                    value={pinInput}
+                    onChange={(e) => setPinInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    inputMode="numeric"
+                    maxLength={6}
+                    className="bg-white/20 border-white/30 text-white placeholder:text-gray-400 text-center text-xl tracking-[0.3em] font-mono"
+                  />
+                  <Button
+                    fullWidth
+                    size="lg"
+                    loading={scanning}
+                    disabled={pinInput.length !== 6}
+                    onClick={() => {
+                      handlePinScan(pinInput);
+                      setPinInput('');
+                    }}
+                  >
+                    Validate PIN
+                  </Button>
+                </div>
+
+                {lastResult && (
+                  <ScanResult status={lastResult.status} message={lastResult.message} />
+                )}
+              </>
             )}
           </>
         )}
