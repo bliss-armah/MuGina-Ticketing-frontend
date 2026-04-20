@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { ticketsApi } from '../../lib/api';
@@ -9,17 +9,20 @@ import { BottomNav } from '../../components/layout/BottomNav';
 import { TicketCard } from '../../components/tickets/TicketCard';
 import { TicketSkeleton } from '../../components/ui/Skeleton';
 
-export default function MyTicketsPage() {
-  const { user, isLoading: authLoading } = useAuth(true);
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+function PaymentSuccessToast() {
   const searchParams = useSearchParams();
-
   useEffect(() => {
     if (searchParams.get('payment') === 'success') {
       toast.success('Payment successful! Your tickets are ready.');
     }
   }, [searchParams]);
+  return null;
+}
+
+export default function MyTicketsPage() {
+  const { user, isLoading: authLoading } = useAuth(true);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -31,6 +34,9 @@ export default function MyTicketsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
+      <Suspense>
+        <PaymentSuccessToast />
+      </Suspense>
       <Navbar />
 
       <main className="max-w-lg mx-auto px-4 py-6">

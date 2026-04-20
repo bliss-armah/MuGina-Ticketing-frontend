@@ -28,6 +28,8 @@ export default function LoginPage() {
       const { accessToken, user } = res.data;
       setAuth(accessToken, user);
       toast.success(`Welcome back, ${user.firstName}!`);
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      if (redirect) { router.push(redirect); return; }
       if (user.role === 'ORGANIZER') router.push('/organizer/dashboard');
       else if (user.role === 'GATE_AGENT') router.push('/scan');
       else router.push('/');

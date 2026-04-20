@@ -35,7 +35,7 @@ export default function EventDetailPage() {
   if (!event) return null;
 
   const handleBuyTickets = () => {
-    if (!user) { router.push('/login'); return; }
+    if (!user) { router.push(`/events/${id}/guest-checkout`); return; }
     router.push(`/events/${id}/checkout`);
   };
 
@@ -96,10 +96,19 @@ export default function EventDetailPage() {
 
       {/* Sticky buy button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 safe-bottom">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto space-y-2">
           <Button fullWidth size="xl" onClick={handleBuyTickets}>
             🎫 Get Tickets
           </Button>
+          {!user && (
+            <button
+              onClick={() => router.push(`/login?redirect=/events/${id}/checkout`)}
+              className="w-full text-center text-sm text-gray-500"
+            >
+              Have an account?{' '}
+              <span className="text-brand-gold font-semibold">Sign in</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -22,7 +22,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401 && typeof window !== "undefined") {
+    if (error.response?.status === 401 && typeof window !== "undefined" && !window.location.pathname.includes("/login")
+) {
       localStorage.removeItem("mugina_token");
       localStorage.removeItem("mugina_user");
       window.location.href = "/login";
@@ -61,6 +62,7 @@ export const eventsApi = {
 // Orders
 export const ordersApi = {
   create: (data: any) => api.post("/orders", data),
+  createGuest: (data: any) => api.post("/orders/guest", data),
   list: () => api.get("/orders"),
   getById: (id: string) => api.get(`/orders/${id}`),
 };
