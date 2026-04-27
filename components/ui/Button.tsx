@@ -21,10 +21,10 @@ export function Button({
   const base = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
   const variants = {
-    primary: 'bg-brand-gold text-white hover:bg-primary-600 focus:ring-brand-gold shadow-lg shadow-primary-200',
-    secondary: 'bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-400',
-    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-lg shadow-red-200',
-    ghost: 'bg-transparent text-brand-gold border-2 border-brand-gold hover:bg-primary-50 focus:ring-brand-gold',
+    primary: 'bg-brand-gold text-brand-dark hover:bg-primary-dark focus:ring-primary shadow-lg shadow-primary/20',
+    secondary: 'bg-white/10 text-white hover:bg-white/20 focus:ring-white/30',
+    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500',
+    ghost: 'bg-transparent text-brand-gold border-2 border-brand-gold hover:bg-primary/10 focus:ring-primary',
   };
 
   const sizes = {

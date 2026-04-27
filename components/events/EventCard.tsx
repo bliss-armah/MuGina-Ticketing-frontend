@@ -22,7 +22,7 @@ export function EventCard({ event }: EventCardProps) {
   return (
     <Link href={`/events/${event.id}`} className="block">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.98] transition-transform">
-        <div className="relative h-44 bg-gradient-to-br from-primary-100 to-primary-200">
+        <div className="relative h-44 bg-gradient-to-br from-primary/20 to-primary/40">
           {event.bannerUrl ? (
             <Image src={event.bannerUrl} alt={event.title} fill className="object-cover" />
           ) : (
@@ -60,7 +60,7 @@ export function EventCard({ event }: EventCardProps) {
                 </span>
               )}
             </div>
-            <span className="bg-brand-gold text-white text-xs px-3 py-1.5 rounded-full font-semibold">
+            <span className="bg-brand-gold text-brand-dark text-xs px-3 py-1.5 rounded-full font-semibold">
               Get Tickets
             </span>
           </div>

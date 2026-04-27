@@ -15,13 +15,18 @@ export type ScanStatus = 'valid' | 'already_used' | 'invalid' | 'offline_valid' 
 export function useOfflineScanner(eventId: string) {
   const [scanning, setScanning] = useState(false);
   const [lastResult, setLastResult] = useState<{ status: ScanStatus; message: string } | null>(null);
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   const vibrate = (pattern: number[]) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(pattern);
     }
   };
+
+  const clearResult = useCallback(() => {
+    setLastResult(null);
+    setScanning(false);
+  }, []);
 
   const validateOnline = useCallback(async (qrPayload: string): Promise<{ status: ScanStatus; message: string }> => {
     const response = await scannerApi.validate({ qrPayload, eventId });
@@ -30,7 +35,6 @@ export function useOfflineScanner(eventId: string) {
 
   const validateOffline = useCallback(async (qrPayload: string): Promise<{ status: ScanStatus; message: string }> => {
     try {
-      // Extract ticket ID from payload
       const [encoded] = qrPayload.split('.');
       const decoded = JSON.parse(Buffer.from(encoded, 'base64').toString());
       const ticketId = decoded.ticketId;
@@ -62,38 +66,22 @@ export function useOfflineScanner(eventId: string) {
     setScanning(true);
 
     try {
-      let result: { status: ScanStatus; message: string };
-
-      if (navigator.onLine) {
-        result = await validateOnline(qrPayload);
-      } else {
-        result = await validateOffline(qrPayload);
-      }
+      const result = navigator.onLine
+        ? await validateOnline(qrPayload)
+        : await validateOffline(qrPayload);
 
       setLastResult(result);
-
-      if (result.status === 'valid' || result.status === 'offline_valid') {
-        vibrate([100, 50, 100]);
-      } else {
-        vibrate([300]);
-      }
+      vibrate(result.status === 'valid' || result.status === 'offline_valid' ? [100, 50, 100] : [300]);
     } catch {
-      const offline = await validateOffline(qrPayload);
-      setLastResult(offline);
-    } finally {
-      setTimeout(() => setScanning(false), 1500);
+      const fallback = await validateOffline(qrPayload);
+      setLastResult(fallback);
     }
   }, [scanning, validateOnline, validateOffline]);
-
-  const downloadForOffline = useCallback(async () => {
-    const response = await scannerApi.getEventTickets(eventId);
-    await cacheEventTickets(eventId, response.data);
-    return response.data.length;
-  }, [eventId]);
 
   const handlePinScan = useCallback(async (pin: string) => {
     if (scanning) return;
     setScanning(true);
+
     try {
       if (!navigator.onLine) {
         setLastResult({ status: 'offline_invalid', message: 'PIN validation requires an internet connection' });
@@ -101,17 +89,17 @@ export function useOfflineScanner(eventId: string) {
       }
       const response = await scannerApi.validatePin({ pin, eventId });
       setLastResult(response.data);
-      if (response.data.status === 'valid') {
-        vibrate([100, 50, 100]);
-      } else {
-        vibrate([300]);
-      }
+      vibrate(response.data.status === 'valid' ? [100, 50, 100] : [300]);
     } catch {
       setLastResult({ status: 'invalid', message: 'Could not validate PIN' });
-    } finally {
-      setTimeout(() => setScanning(false), 1500);
     }
   }, [scanning, eventId]);
+
+  const downloadForOffline = useCallback(async () => {
+    const response = await scannerApi.getEventTickets(eventId);
+    await cacheEventTickets(eventId, response.data);
+    return response.data.length;
+  }, [eventId]);
 
   const syncQueue = useCallback(async () => {
     if (!navigator.onLine) return;
@@ -126,5 +114,5 @@ export function useOfflineScanner(eventId: string) {
     await clearScanQueue();
   }, []);
 
-  return { handleScan, handlePinScan, lastResult, scanning, isOnline, downloadForOffline, syncQueue };
+  return { handleScan, handlePinScan, clearResult, lastResult, scanning, isOnline, downloadForOffline, syncQueue };
 }

@@ -16,7 +16,7 @@ export function QRDisplay({ value, size = 200, label }: QRDisplayProps) {
     QRCode.toCanvas(canvasRef.current, value, {
       width: size,
       margin: 2,
-      color: { dark: '#1a1a2e', light: '#ffffff' },
+      color: { dark: '#000000', light: '#ffffff' },
       errorCorrectionLevel: 'H',
     });
   }, [value, size]);

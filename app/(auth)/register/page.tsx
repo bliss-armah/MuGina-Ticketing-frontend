@@ -83,7 +83,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 {roles.map((r) => (
                   <label key={r.value} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${
-                    form.role === r.value ? 'border-brand-gold bg-primary-50' : 'border-gray-200'
+                    form.role === r.value ? 'border-brand-gold bg-primary/10' : 'border-gray-200'
                   }`}>
                     <input type="radio" name="role" value={r.value} checked={form.role === r.value}
                       onChange={(e) => setForm({ ...form, role: e.target.value })} className="hidden" />

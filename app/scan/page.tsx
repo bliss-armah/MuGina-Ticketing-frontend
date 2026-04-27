@@ -34,14 +34,13 @@ export default function ScanPage() {
   // Shared scanner state
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [activeEventId, setActiveEventId] = useState('');
-  const [downloading, setDownloading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [scanEnabled, setScanEnabled] = useState(false);
 
   const [scanMode, setScanMode] = useState<'camera' | 'pin'>('camera');
   const [pinInput, setPinInput] = useState('');
 
-  const { handleScan, handlePinScan, lastResult, scanning, isOnline, downloadForOffline, syncQueue } =
+  const { handleScan, handlePinScan, clearResult, lastResult, scanning, isOnline, downloadForOffline, syncQueue } =
     useOfflineScanner(activeEventId);
 
   // Load organizer's own events (organizer path only)
@@ -57,6 +56,7 @@ export default function ScanPage() {
     setSelectedEvent(event);
     setActiveEventId(event.id);
     setScanEnabled(true);
+    downloadForOffline().catch(() => {});
   };
 
   // Gate agent: validate the pasted ID against the API
@@ -83,18 +83,6 @@ export default function ScanPage() {
     setIdError('');
     setScanMode('camera');
     setPinInput('');
-  };
-
-  const handleDownload = async () => {
-    setDownloading(true);
-    try {
-      const count = await downloadForOffline();
-      toast.success(`Downloaded ${count} tickets for offline use`);
-    } catch {
-      toast.error('Download failed. Check connection.');
-    } finally {
-      setDownloading(false);
-    }
   };
 
   const handleSync = async () => {
@@ -124,7 +112,16 @@ export default function ScanPage() {
       <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-black">Gate Scanner</h1>
+          <div className="flex items-center gap-3">
+            {scanEnabled && (
+              <button onClick={handleStop} className="text-white/70 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+            )}
+            <h1 className="text-2xl font-black">Gate Scanner</h1>
+          </div>
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
             isOnline ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
           }`}>
@@ -211,17 +208,11 @@ export default function ScanPage() {
             )}
 
             <div className="flex gap-2">
-              <Button size="sm" variant="secondary" onClick={handleDownload} loading={downloading} className="flex-1">
-                ⬇️ Offline
-              </Button>
               {!isOnline && (
                 <Button size="sm" variant="ghost" onClick={handleSync} loading={syncing} className="flex-1">
                   🔄 Sync
                 </Button>
               )}
-              <Button size="sm" variant="danger" onClick={handleStop}>
-                Stop
-              </Button>
             </div>
 
             {/* Mode toggle */}
@@ -245,20 +236,30 @@ export default function ScanPage() {
             </div>
 
             {scanMode === 'camera' ? (
-              <>
-                <div className={`transition-all duration-300 ${scanning ? 'opacity-50' : 'opacity-100'}`}>
-                  <QRScanner onScan={onScan} enabled={!scanning} />
-                </div>
+              <div className="relative">
+                <QRScanner onScan={onScan} />
 
-                {lastResult ? (
-                  <ScanResult status={lastResult.status} message={lastResult.message} />
-                ) : (
-                  <div className="text-center text-gray-400 py-4">
-                    <p className="text-4xl mb-2">📷</p>
-                    <p className="text-sm">Point camera at QR code to scan</p>
+                {/* Result overlay modal */}
+                {lastResult && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/70 rounded-2xl p-5">
+                    <div className="w-full space-y-4">
+                      <ScanResult status={lastResult.status} message={lastResult.message} />
+                      <button
+                        onClick={clearResult}
+                        className="w-full py-3 rounded-xl bg-white text-black font-bold text-base active:scale-95 transition-transform"
+                      >
+                        OK
+                      </button>
+                    </div>
                   </div>
                 )}
-              </>
+
+                {!lastResult && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center pointer-events-none">
+                    <p className="text-white/60 text-xs bg-black/40 px-3 py-1.5 rounded-full">Point camera at QR code</p>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <div className="bg-white/10 rounded-2xl p-5 space-y-4">
@@ -279,7 +280,7 @@ export default function ScanPage() {
                     fullWidth
                     size="lg"
                     loading={scanning}
-                    disabled={pinInput.length !== 6}
+                    disabled={pinInput.length !== 6 || scanning}
                     onClick={() => {
                       handlePinScan(pinInput);
                       setPinInput('');
@@ -290,7 +291,15 @@ export default function ScanPage() {
                 </div>
 
                 {lastResult && (
-                  <ScanResult status={lastResult.status} message={lastResult.message} />
+                  <div className="space-y-3">
+                    <ScanResult status={lastResult.status} message={lastResult.message} />
+                    <button
+                      onClick={clearResult}
+                      className="w-full py-3 rounded-xl bg-white text-black font-bold text-base active:scale-95 transition-transform"
+                    >
+                      OK
+                    </button>
+                  </div>
                 )}
               </>
             )}
