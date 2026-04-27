@@ -1,5 +1,8 @@
 import type { Config } from 'tailwindcss';
 
+// ─── Change this one constant to retheme the entire app ───────────────────────
+const PRIMARY = '#FACC15'; // yellow-400
+
 const config: Config = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -10,22 +13,13 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          50: '#fef3e2',
-          100: '#fde4b9',
-          200: '#fbd48d',
-          300: '#f9c461',
-          400: '#f8b842',
-          500: '#f6ab2a',
-          600: '#e59d25',
-          700: '#cc8a1e',
-          800: '#b37818',
-          900: '#8c5c0f',
+          DEFAULT: PRIMARY,
+          dark: '#CA8A04',  // hover / active states
+          light: '#FEF08A', // tint backgrounds
         },
         brand: {
-          gold: '#F6AB2A',
-          dark: '#1a1a2e',
-          green: '#16a34a',
-          red: '#dc2626',
+          gold: PRIMARY,    // alias — all existing brand-gold classes stay unchanged
+          dark: '#000000',  // pure black, replaces navy
         },
       },
       fontFamily: {

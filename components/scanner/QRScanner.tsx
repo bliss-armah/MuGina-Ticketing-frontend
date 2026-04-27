@@ -4,10 +4,9 @@ import jsQR from 'jsqr';
 
 interface QRScannerProps {
   onScan: (result: string) => void;
-  enabled?: boolean;
 }
 
-export function QRScanner({ onScan, enabled = true }: QRScannerProps) {
+export function QRScanner({ onScan }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -20,7 +19,6 @@ export function QRScanner({ onScan, enabled = true }: QRScannerProps) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!enabled) return;
 
     let active = true;
 
@@ -80,7 +78,7 @@ export function QRScanner({ onScan, enabled = true }: QRScannerProps) {
       streamRef.current = null;
       setReady(false);
     };
-  }, [enabled]);
+  }, []);
 
   return (
     <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-900">

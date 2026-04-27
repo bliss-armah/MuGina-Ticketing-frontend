@@ -44,7 +44,7 @@ export default function EventDetailPage() {
       <Navbar />
 
       {/* Banner */}
-      <div className="relative h-64 bg-gradient-to-br from-primary-200 to-primary-400">
+      <div className="relative h-64 bg-gradient-to-br from-primary/30 to-primary/60">
         {event.bannerUrl && (
           <Image src={event.bannerUrl} alt={event.title} fill className="object-cover" />
         )}
